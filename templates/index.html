@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAI Service Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .chat-container { width: 100%; max-width: 400px; background: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { background: #007bff; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        .chat-box { height: 350px; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #ddd; }
+        .message { padding: 10px 14px; border-radius: 8px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
+        .user-message { background: #007bff; color: white; align-self: flex-end; }
+        .bot-message { background: #e2e8f0; color: #333; align-self: flex-start; }
+        .chat-input-area { display: flex; padding: 10px; background: #fff; }
+        .chat-input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; font-size: 14px; }
+        .chat-input-area button { background: #007bff; color: white; border: none; padding: 10px 15px; margin-left: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">DAI Service</div>
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-message">नमस्ते! मैं DAI Service हूँ, बताइए आपकी क्या मदद करूँ?</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="यहाँ मैसेज लिखें..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">भेजें</button>
+    </div>
+</div>
+
+<script>
+    async function sendMessage() {
+        const inputField = document.getElementById('userInput');
+        const chatBox = document.getElementById('chatBox');
+        const userText = inputField.value.trim();
+        if (!userText) return;
+
+        chatBox.innerHTML += `<div class="message user-message">${userText}</div>`;
+        inputField.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userText })
+            });
+            const data = await response.json();
+            chatBox.innerHTML += `<div class="message bot-message">${data.reply || 'माफ कीजिए, जवाब नहीं मिला।'}</div>`;
+        } catch (error) {
+            chatBox.innerHTML += `<div class="message bot-message">सर्वर से कनेक्ट होने में दिक्कत आ रही है।</div>`;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') { sendMessage(); }
+    }
+</script>
+
+</body>
+</html>
